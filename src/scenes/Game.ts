@@ -1,4 +1,4 @@
-import { Scene } from "phaser";
+import { GameObjects, Scene } from "phaser";
 
 const up = (i: number) => {
   return i < 16 ? -1 : i - 16;
@@ -82,7 +82,7 @@ export class Game extends Scene {
 
     const tick = 350;
     let score = 0;
-    let bestScore = 0;
+    let bestScore = parseInt(localStorage.getItem("bestScore") || "0");
 
     // add a score element at the bottom left of the grid
     const scoreboard = this.add
@@ -144,6 +144,19 @@ export class Game extends Scene {
           hasTriggered = true;
           score = 0;
 
+          const flash = (obj: GameObjects.Text) => {
+            this.tweens.add({
+              targets: obj,
+              duration: 300,
+              alpha: 0,
+              yoyo: true,
+              repeat: 3,
+              onComplete: () => {
+                obj.setAlpha(1);
+              },
+            });
+          };
+
           let next = [j * 16 + i];
           const timer = this.time.addEvent({
             startAt: 0,
@@ -153,19 +166,14 @@ export class Game extends Scene {
                 timer.remove();
                 hasTriggered = false;
                 // flash the scoreboard
-                this.tweens.add({
-                  targets: scoreboard,
-                  duration: 300,
-                  alpha: 0,
-                  yoyo: true,
-                  repeat: 3,
-                  onComplete: () => {
-                    scoreboard.setAlpha(1);
-                  },
-                });
+                flash(scoreboard);
                 if (score > bestScore) {
                   bestScore = score;
                   bestScoreboard.setText(`Best: ${bestScore}`);
+                  flash(bestScoreboard);
+
+                  // save the best score to local storage
+                  localStorage.setItem("bestScore", bestScore.toString());
                 }
 
                 return;
