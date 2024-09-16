@@ -1,4 +1,4 @@
-# Grid Game
+# Chain Reaction
 
 This is a copy of a lovely little flash 'game' I discovered years ago but can't seem to find now, so I've re-created it from what I could find online.
 
