@@ -11,7 +11,7 @@ const config: Types.Core.GameConfig = {
     backgroundColor: '#ddf7ff',
     scale: {
         mode: Scale.FIT,
-        autoCenter: Scale.CENTER_BOTH
+        autoCenter: Scale.CENTER_HORIZONTALLY
     },
     scene: [
         MainGame
