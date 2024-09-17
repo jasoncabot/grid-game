@@ -1,16 +1,21 @@
+import WebFontFile from "../WebFontFile";
+
 import { GameObjects, Scene } from "phaser";
 
+const rows = 16;
+const columns = 16;
+
 const up = (i: number) => {
-  return i < 16 ? -1 : i - 16;
+  return i < columns ? -1 : i - columns;
 };
 const down = (i: number) => {
-  return i > 239 ? -1 : i + 16;
+  return i > columns * rows - 1 - columns ? -1 : i + columns;
 };
 const left = (i: number) => {
-  return i % 16 === 0 ? -1 : i - 1;
+  return i % rows === 0 ? -1 : i - 1;
 };
 const right = (i: number) => {
-  return i % 16 === 15 ? -1 : i + 1;
+  return i % rows === rows - 1 ? -1 : i + 1;
 };
 const findTouchingByOrientation = [
   // 0 = ┘
@@ -63,6 +68,7 @@ export class Game extends Scene {
 
   preload() {
     this.load.setPath("assets");
+    this.load.addFile(new WebFontFile(this.load, "IBM Plex Mono"));
 
     this.load.image("item", "item.png");
 
@@ -71,13 +77,13 @@ export class Game extends Scene {
 
   create() {
     // create a backing data array of 256 elements, where each has an orientation property
-    const data = new Array(256)
+    const data = new Array(columns * rows)
       .fill(0)
       .map((_) => ({ orientation: Math.floor(Math.random() * 4) }));
 
     let hasTriggered = false;
 
-    const gfx = new Array(256).fill(null);
+    const gfx = new Array(columns * rows).fill(null);
     const rotations = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
 
     const tick = 350;
@@ -86,23 +92,26 @@ export class Game extends Scene {
 
     // add a score element at the bottom left of the grid
     const scoreboard = this.add
-      .text(12, 12 + 512 + 12, `Score: ${score}`, {
-        fontSize: "32px",
-        color: "#000",
+      .text(12, 12 + 512 + 12, `Score:\t${score}`, {
+        fontSize: "24px",
+        color: "#222",
+        fontFamily: "'IBM Plex Mono'",
       })
       .setOrigin(0);
     const bestScoreboard = this.add
-      .text(12, 12 + 512 + 12 + 32, `Best: ${bestScore}`, {
-        fontSize: "32px",
-        color: "#000",
+      .text(12, 12 + 512 + 12 + 32, `Best:\t\t${bestScore}`, {
+        fontSize: "24px",
+        color: "#222",
+        fontFamily: "'IBM Plex Mono'",
       })
       .setOrigin(0);
 
     // add a button to reset the game
     this.add
       .text(512 + 12, 12 + 512 + 12, "Reset", {
-        fontSize: "32px",
-        color: "#000",
+        fontSize: "24px",
+        color: "#222",
+        fontFamily: "'IBM Plex Mono'",
       })
       .setOrigin(1, 0)
       .setInteractive()
@@ -112,8 +121,8 @@ export class Game extends Scene {
         }
         hasTriggered = true;
         score = 0;
-        scoreboard.setText(`Score: ${score}`);
-        for (let i = 0; i < 256; i++) {
+        scoreboard.setText(`Score:\t${score}`);
+        for (let i = 0; i < data.length; i++) {
           const orientation = Math.floor(Math.random() * 4);
           data[i].orientation = orientation;
           this.tweens.add({
@@ -127,14 +136,14 @@ export class Game extends Scene {
       });
 
     // add a 16x16 grid of sprites, each 32 pixels in size
-    for (let i = 0; i < 16; i++) {
-      for (let j = 0; j < 16; j++) {
+    for (let i = 0; i < columns; i++) {
+      for (let j = 0; j < rows; j++) {
         // read the orientation for this element
-        const orientation = data[j * 16 + i].orientation;
+        const orientation = data[j * columns + i].orientation;
         const item = this.add
           .image(12 + 16 + i * 32, 12 + 16 + j * 32, "item")
           .setRotation(rotations[orientation]);
-        gfx[j * 16 + i] = item;
+        gfx[j * columns + i] = item;
 
         // when the item is tapped, then rotate it 90 degrees and update orientation
         item.setInteractive().on("pointerdown", async () => {
@@ -157,7 +166,7 @@ export class Game extends Scene {
             });
           };
 
-          let next = [j * 16 + i];
+          let next = [j * columns + i];
           const timer = this.time.addEvent({
             startAt: 0,
             delay: tick,
@@ -169,7 +178,7 @@ export class Game extends Scene {
                 flash(scoreboard);
                 if (score > bestScore) {
                   bestScore = score;
-                  bestScoreboard.setText(`Best: ${bestScore}`);
+                  bestScoreboard.setText(`Best:\t\t${bestScore}`);
                   flash(bestScoreboard);
 
                   // save the best score to local storage
@@ -190,15 +199,29 @@ export class Game extends Scene {
                   rotation: rotations[orientation],
                   ease: Phaser.Math.Easing.Cubic.Out,
                 });
+
+                const gradientLength = 120;
+                const start = Phaser.Display.Color.HexStringToColor("#88c6fe");
+                const end = Phaser.Display.Color.HexStringToColor("#ffffff");
                 // colour tween
                 this.tweens.addCounter({
-                  from: 0xaa,
-                  to: 0xff,
-                  duration: tick * 3,
+                  from: 0,
+                  to: gradientLength,
+                  duration: tick * 4,
                   onUpdate: (tween) => {
-                    const value = Math.floor(tween.getValue());
+                    const gradient =
+                      Phaser.Display.Color.Interpolate.ColorWithColor(
+                        start,
+                        end,
+                        gradientLength,
+                        tween.getValue()
+                      );
                     gfx[index].setTint(
-                      Phaser.Display.Color.GetColor(value, value, value)
+                      Phaser.Display.Color.GetColor(
+                        gradient.r,
+                        gradient.g,
+                        gradient.b
+                      )
                     );
                   },
                   onComplete: () => {
@@ -208,7 +231,7 @@ export class Game extends Scene {
                 // generate a short audio clip to play
                 this.sound.play("click", { volume: 0.5 });
                 score++;
-                scoreboard.setText(`Score: ${score}`);
+                scoreboard.setText(`Score:\t${score}`);
                 rotated.add(index);
               }
 
