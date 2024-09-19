@@ -5,8 +5,8 @@ import { AUTO, Game, Scale, Types } from "phaser";
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Types.Core.GameConfig = {
   type: AUTO,
-  width: 536,
-  height: 600,
+  width: 1048,
+  height: 1200,
   parent: "game-container",
   backgroundColor: "#ddf7ff",
   scale: {
@@ -14,7 +14,6 @@ const config: Types.Core.GameConfig = {
     autoCenter: Scale.CENTER_HORIZONTALLY,
   },
   render: {
-    pixelArt: true,
     preserveDrawingBuffer: true,
   },
   scene: [MainGame],

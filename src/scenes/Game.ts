@@ -4,6 +4,8 @@ import { GameObjects, Scene } from "phaser";
 
 const rows = 16;
 const columns = 16;
+const itemWidth = 64;
+const itemHeight = 64;
 
 const up = (i: number) => {
   return i < columns ? -1 : i - columns;
@@ -83,7 +85,9 @@ export class Game extends Scene {
 
     let hasTriggered = false;
 
-    const gfx = new Array(columns * rows).fill(null);
+    const gfx: Phaser.GameObjects.Sprite[] = new Array(columns * rows).fill(
+      null
+    );
     const rotations = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
 
     const tick = 350;
@@ -92,14 +96,14 @@ export class Game extends Scene {
 
     // add a score element at the bottom left of the grid
     const scoreboard = this.add
-      .text(12, 12 + 512 + 12, `Score:\t${score}`, {
+      .text(12, 12 + rows * itemHeight + 12, `Score:\t${score}`, {
         fontSize: "24px",
         color: "#222",
         fontFamily: "'IBM Plex Mono'",
       })
       .setOrigin(0);
     const bestScoreboard = this.add
-      .text(12, 12 + 512 + 12 + 32, `Best:\t\t${bestScore}`, {
+      .text(12, 12 + rows * itemHeight + 12 + 32, `Best:\t\t${bestScore}`, {
         fontSize: "24px",
         color: "#222",
         fontFamily: "'IBM Plex Mono'",
@@ -108,7 +112,7 @@ export class Game extends Scene {
 
     // add a button to reset the game
     this.add
-      .text(512 + 12, 12 + 512 + 12, "Reset", {
+      .text(columns * itemWidth + 12, 12 + rows * itemHeight + 12, "Reset", {
         fontSize: "24px",
         color: "#222",
         fontFamily: "'IBM Plex Mono'",
@@ -135,18 +139,53 @@ export class Game extends Scene {
         hasTriggered = false;
       });
 
-    // add a 16x16 grid of sprites, each 32 pixels in size
+    const createItem = (i: number, j: number, orientation: number) => {
+      const graphics = this.add.graphics();
+
+      graphics.fillStyle(0xf8f8f8, 1);
+      graphics.fillCircle(itemWidth / 2, itemWidth / 2, itemWidth / 2);
+
+      graphics.lineStyle(itemWidth / 8, 0x88c6fe, 1);
+      graphics.beginPath();
+      graphics.arc(
+        itemHeight,
+        0,
+        itemWidth / 2,
+        Phaser.Math.DegToRad(-90),
+        Phaser.Math.DegToRad(0),
+        true
+      );
+      graphics.strokePath();
+      graphics.closePath();
+
+      graphics.generateTexture("itemTexture", itemWidth, itemHeight);
+
+      const sprite = this.add
+        .sprite(
+          12 + itemWidth / 2 + i * itemWidth,
+          12 + itemWidth / 2 + j * itemHeight,
+          "itemTexture"
+        )
+        .setOrigin(0.5)
+        .setRotation(rotations[orientation])
+        .setInteractive();
+
+      graphics.destroy();
+      return sprite;
+    };
+
+    // add a grid of sprites, each some pixels in size
     for (let i = 0; i < columns; i++) {
       for (let j = 0; j < rows; j++) {
         // read the orientation for this element
         const orientation = data[j * columns + i].orientation;
-        const item = this.add
-          .image(12 + 16 + i * 32, 12 + 16 + j * 32, "item")
-          .setRotation(rotations[orientation]);
+
+        const item = createItem(i, j, orientation);
         gfx[j * columns + i] = item;
 
         // when the item is tapped, then rotate it 90 degrees and update orientation
         item.setInteractive().on("pointerdown", async () => {
+          this.cameras.main.flash(0x000000, 100);
           if (hasTriggered) {
             return;
           }
@@ -216,6 +255,7 @@ export class Game extends Scene {
                         gradientLength,
                         tween.getValue()
                       );
+
                     gfx[index].setTint(
                       Phaser.Display.Color.GetColor(
                         gradient.r,
@@ -229,7 +269,10 @@ export class Game extends Scene {
                   },
                 });
                 // generate a short audio clip to play
-                this.sound.play("click", { volume: 0.5 });
+                this.sound.play("click", {
+                  volume: 0.5,
+                  delay: Math.random() * (tick / 1000),
+                });
                 score++;
                 scoreboard.setText(`Score:\t${score}`);
                 rotated.add(index);
