@@ -6,6 +6,8 @@ const rows = 16;
 const columns = 16;
 const itemWidth = 64;
 const itemHeight = 64;
+const tick = 350;
+const fontSize = 48;
 
 const up = (i: number) => {
   return i < columns ? -1 : i - columns;
@@ -90,30 +92,34 @@ export class Game extends Scene {
     );
     const rotations = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
 
-    const tick = 350;
     let score = 0;
     let bestScore = parseInt(localStorage.getItem("bestScore") || "0");
 
     // add a score element at the bottom left of the grid
     const scoreboard = this.add
       .text(12, 12 + rows * itemHeight + 12, `Score:\t${score}`, {
-        fontSize: "24px",
+        fontSize: `${fontSize}px`,
         color: "#222",
         fontFamily: "'IBM Plex Mono'",
       })
       .setOrigin(0);
     const bestScoreboard = this.add
-      .text(12, 12 + rows * itemHeight + 12 + 32, `Best:\t\t${bestScore}`, {
-        fontSize: "24px",
-        color: "#222",
-        fontFamily: "'IBM Plex Mono'",
-      })
+      .text(
+        12,
+        12 + rows * itemHeight + 12 + fontSize + 12,
+        `Best:\t\t${bestScore}`,
+        {
+          fontSize: `${fontSize}px`,
+          color: "#222",
+          fontFamily: "'IBM Plex Mono'",
+        }
+      )
       .setOrigin(0);
 
     // add a button to reset the game
     this.add
       .text(columns * itemWidth + 12, 12 + rows * itemHeight + 12, "Reset", {
-        fontSize: "24px",
+        fontSize: `${fontSize}px`,
         color: "#222",
         fontFamily: "'IBM Plex Mono'",
       })
