@@ -217,7 +217,12 @@ function initGame() {
 
   window.addEventListener("resize", resize);
   window.visualViewport?.addEventListener("resize", resize);
-  requestAnimationFrame(resize); // defer until after first layout
+
+  // Run synchronously first — accessing offsetHeight forces a layout reflow,
+  // giving us a correct size before the first paint so cells never flash large.
+  resize();
+  // Second pass after fonts load, in case IBM Plex Mono changes the UI bar height.
+  document.fonts?.ready?.then(resize);
 }
 
 // ── Bootstrap ──────────────────────────────────────────────────────────────
