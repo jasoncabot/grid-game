@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -21,18 +21,16 @@
         <div id="board"></div>
       </div>
       <div id="ui">
-        <div class="score-panel">
-          <span class="score-label">Score</span>
-          <span id="score-value">0</span>
+        <div id="scores">
+          <div id="score-line">Score:&thinsp;<span id="score-value">0</span></div>
+          <div id="best-line">Best:&thinsp;&thinsp;<span id="best-value">0</span></div>
         </div>
-        <div class="score-panel">
-          <span class="score-label">Best</span>
-          <span id="best-value">0</span>
+        <div id="ui-actions">
+          <button id="reset-button">Reset</button>
+          <button id="share-button" aria-label="Share">
+            <img width="20" height="20" src="/share.svg" alt="" />
+          </button>
         </div>
-        <button id="reset-button">Reset</button>
-        <button id="share-button" aria-label="Share">
-          <img width="24" height="24" src="/share.svg" alt="" />
-        </button>
       </div>
     </div>
 
