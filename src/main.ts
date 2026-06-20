@@ -69,18 +69,21 @@ function replayAnimation(el: HTMLElement, cls: string) {
 
 // Base SVG for each cell: └ shape (orientation 1, 0°)
 // Arc center at top-right corner (64,0), r=32, CCW from top-center (32,0) to
-// right-center (64,32). sweep=0 (CCW) ensures the arc hugs the corner so each
-// pipe endpoint exits perpendicular to its cell edge — critical for seamless
-// connection with adjacent cells.
+// right-center (64,32). sweep=0 (CCW) ensures each pipe endpoint exits
+// perpendicular to its cell edge — critical for seamless connections.
 const CELL_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <circle cx="32" cy="32" r="32" fill="#f8f8f8"/>
+  <circle class="plate" cx="32" cy="32" r="32"/>
+  <path class="pipe-shadow" d="M 32,0 A 32,32 0 0,0 64,32"/>
   <path class="arc" d="M 32,0 A 32,32 0 0,0 64,32"/>
+  <path class="pipe-highlight" d="M 32,0 A 32,32 0 0,0 64,32"/>
 </svg>`;
 
 function initGame() {
   const board      = document.getElementById("board")!;
   const scoreEl    = document.getElementById("score-value")!;
   const bestEl     = document.getElementById("best-value")!;
+  const scoreLine  = document.getElementById("score-line")!;
+  const bestLine   = document.getElementById("best-line")!;
   const resetBtn   = document.getElementById("reset-button")!;
   const shareBtn   = document.getElementById("share-button")!;
   const flashEl    = document.getElementById("flash-overlay")!;
@@ -134,11 +137,11 @@ function initGame() {
     function step() {
       if (next.length === 0) {
         active = false;
-        replayAnimation(scoreEl.parentElement as HTMLElement, "score-flash");
+        replayAnimation(scoreLine, "score-flash");
         if (score > bestScore) {
           bestScore = score;
           bestEl.textContent = String(bestScore);
-          replayAnimation(bestEl.parentElement as HTMLElement, "score-flash");
+          replayAnimation(bestLine, "score-flash");
           localStorage.setItem("bestScore", String(bestScore));
         }
         return;
