@@ -75,9 +75,7 @@ function replayAnimation(el: HTMLElement, cls: string) {
 // perpendicular to its cell edge — critical for seamless connections.
 const CELL_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <circle class="plate" cx="32" cy="32" r="32" fill="#1e2126"/>
-  <path class="pipe-shadow" d="M 32,0 A 32,32 0 0,0 64,32"/>
   <path class="arc" d="M 32,0 A 32,32 0 0,0 64,32"/>
-  <path class="pipe-highlight" d="M 32,0 A 32,32 0 0,0 64,32"/>
 </svg>`;
 
 function initGame() {
@@ -217,7 +215,12 @@ function initGame() {
 
   window.addEventListener("resize", resize);
   window.visualViewport?.addEventListener("resize", resize);
-  requestAnimationFrame(resize); // defer until after first layout
+
+  // Run synchronously first — accessing offsetHeight forces a layout reflow,
+  // giving us a correct size before the first paint so cells never flash large.
+  resize();
+  // Second pass after fonts load, in case IBM Plex Mono changes the UI bar height.
+  document.fonts?.ready?.then(resize);
 }
 
 // ── Bootstrap ──────────────────────────────────────────────────────────────

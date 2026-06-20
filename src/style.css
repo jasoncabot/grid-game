@@ -34,6 +34,9 @@ html, body {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
   gap: 0;
+  /* CSS-only initial size prevents one-frame flash before JS sets explicit px value */
+  width: min(calc(100vw - 8px), calc(100dvh - 60px));
+  height: min(calc(100vw - 8px), calc(100dvh - 60px));
   /* Brushed steel plate */
   background: #2a2d33;
   padding: 1.5%;
@@ -63,6 +66,12 @@ html, body {
   user-select: none;
   touch-action: manipulation;
   outline: none;
+  /* Circular shape so box-shadow follows the plate circle, not the square cell */
+  border-radius: 50%;
+  /* Establish stacking context; chain-active cells raise z-index so their
+     box-shadow is visible above tightly-packed neighbours */
+  position: relative;
+  z-index: 0;
 }
 
 .cell:hover {
@@ -78,46 +87,31 @@ html, body {
 }
 
 .cell .plate {
-  /* Recessed socket — darker than board surface */
   fill: #1e2126;
-}
-
-.cell .pipe-shadow {
-  /* Depth shadow under the pipe */
-  stroke: rgba(0,0,0,0.5);
-  stroke-width: 11;
-  stroke-linecap: butt;
-  fill: none;
 }
 
 .cell .arc {
   stroke: currentColor;
-  stroke-width: 8;
-  stroke-linecap: butt;
-  fill: none;
-  /* Metallic highlight: slightly lighter stroke on top layer */
-  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.25));
-}
-
-.cell .pipe-highlight {
-  /* Thin specular highlight stripe along the pipe center */
-  stroke: rgba(255,255,255,0.18);
-  stroke-width: 2.5;
+  stroke-width: 9;
   stroke-linecap: butt;
   fill: none;
 }
 
-/* Chain-reaction heat map: red (hot/just activated) → green → blue (cool/fading) */
+/* Chain-reaction heat map: red (hot) → orange → green → blue (cool/fading).
+   box-shadow instead of filter: drop-shadow — box-shadow uses the element's
+   border-box geometry (circular here via border-radius: 50%) and avoids the
+   per-frame SVG alpha-channel trace that makes drop-shadow expensive. */
 @keyframes chain-flash {
-  0%   { filter: drop-shadow(0 0 12px #ff2200) drop-shadow(0 0 24px rgba(255,34,0,0.35)); color: #ff4422; }
-  28%  { filter: drop-shadow(0 0 9px #ff8800);  color: #ffaa44; }
-  55%  { filter: drop-shadow(0 0 7px #22cc44);  color: #55dd88; }
-  80%  { filter: drop-shadow(0 0 5px #2255ff);  color: #5588ff; }
-  100% { filter: none;                           color: #c8a96e; }
+  0%   { box-shadow: 0 0 10px 4px #ff2200; color: #ff4422; z-index: 2; }
+  28%  { box-shadow: 0 0  8px 3px #ff8800; color: #ffaa44; }
+  55%  { box-shadow: 0 0  7px 3px #22cc44; color: #55dd88; }
+  80%  { box-shadow: 0 0  5px 2px #2255ff; color: #5588ff; }
+  100% { box-shadow: none;                 color: #c8a96e; z-index: 0; }
 }
 
 .cell.chain-active {
   animation: chain-flash 2.5s ease-out forwards;
+  z-index: 2;
 }
 
 /* ── UI bar ─────────────────────────────────────────────────────────────── */
