@@ -1,42 +1,189 @@
-body {
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
   padding: 0;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #fcfcfc;
+  height: 100%;
+  background: #fcfcfc;
+  overflow: hidden;
+  touch-action: manipulation; /* prevents 300ms tap delay on mobile */
 }
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
 
 #app {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  height: 100dvh; /* dynamic viewport height respects mobile browser chrome */
+  height: 100vh;  /* fallback for browsers without dvh support */
+}
+
+#board-wrapper {
+  flex: 1;
+  min-height: 0;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  background: #fcfcfc;
 }
 
-#game-container {
-  flex: 1 1;
+/* Board size is set by JS to fill available space while staying square */
+#board {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  gap: 0;
+  background: #ddf7ff;
+  padding: 1.5%;   /* proportional border matching original 12px/1048px ratio */
+  flex-shrink: 0;
 }
 
-#right-column {
-  flex: 0;
+/* ── Cell (one pipe piece) ──────────────────────────────────────────────── */
+
+.cell {
+  display: block;
+  aspect-ratio: 1;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  /* Pipe color — animatable via currentColor so SVG stroke inherits it */
+  color: #88c6fe;
+  /* Smooth rotation; cubic-bezier matches Phaser's Cubic.Out easing */
+  transition: transform 350ms cubic-bezier(0.215, 0.61, 0.355, 1);
+  transform-origin: center center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+  outline: none;
 }
+
+.cell svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* SVG is vector — stays crisp at any resolution / device pixel ratio */
+  overflow: visible;
+  pointer-events: none; /* clicks go to <button>, not SVG internals */
+}
+
+.cell circle {
+  /* Cell background circle */
+}
+
+.cell .arc {
+  stroke: currentColor; /* inherits .cell color for CSS animation */
+  stroke-width: 8;
+  stroke-linecap: round;
+  fill: none;
+}
+
+/* Chain-reaction flash: piece lights up white then fades back to blue */
+@keyframes chain-flash {
+  0%   { color: #88c6fe; }
+  35%  { color: #ffffff; }
+  100% { color: #88c6fe; }
+}
+
+.cell.chain-active {
+  animation: chain-flash 1.4s ease-out forwards;
+}
+
+/* ── UI bar ─────────────────────────────────────────────────────────────── */
+
+#ui {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #fcfcfc;
+  font-family: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+  color: #222;
+  flex-shrink: 0;
+  /* Fluid font: readable on small phones and large monitors */
+  font-size: clamp(13px, 2.5vw, 22px);
+}
+
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 3.5ch;
+}
+
+.score-label {
+  font-size: 0.6em;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+#score-value,
+#best-value {
+  font-weight: 600;
+  font-size: 1.2em;
+  min-width: 3ch;
+  text-align: center;
+}
+
+@keyframes score-flash {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.score-panel.score-flash {
+  animation: score-flash 300ms ease-in-out 3;
+}
+
+#reset-button {
+  margin-left: auto;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 5px 14px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #222;
+  transition: background 120ms;
+}
+
+#reset-button:hover  { background: #e2e2e2; }
+#reset-button:active { background: #d4d4d4; }
 
 #share-button {
-  margin: 10px;
-  padding: 4px;
-  background-color: #fcfcfc;
-  border: none;
-  border-radius: 5px;
+  padding: 5px 8px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms;
 }
 
-@media only screen and (max-width: 600px) {
-  #share-button {
-    margin-top: 80vh;
-  }
+#share-button:hover { background: #e2e2e2; }
+
+/* ── Camera flash ───────────────────────────────────────────────────────── */
+
+#flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 999;
 }
 
-#share-button:hover {
-  background-color: #dedede;
+@keyframes cam-flash {
+  0%   { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+#flash-overlay.flash-active {
+  animation: cam-flash 100ms ease-out forwards;
 }
