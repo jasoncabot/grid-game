@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/style.css" />
     <title>Chain Reaction</title>
     <script
@@ -12,16 +15,29 @@
       crossorigin="anonymous"
     ></script>
   </head>
-
   <body>
     <div id="app">
-      <div id="game-container"></div>
-      <div id="right-column">
-        <button id="share-button" style="position: absolute; top: 0; right: 0">
-          <img width="32" height="32" src="/share.svg" alt="Share" />
+      <div id="board-wrapper">
+        <div id="board"></div>
+      </div>
+      <div id="ui">
+        <div class="score-panel">
+          <span class="score-label">Score</span>
+          <span id="score-value">0</span>
+        </div>
+        <div class="score-panel">
+          <span class="score-label">Best</span>
+          <span id="best-value">0</span>
+        </div>
+        <button id="reset-button">Reset</button>
+        <button id="share-button" aria-label="Share">
+          <img width="24" height="24" src="/share.svg" alt="" />
         </button>
       </div>
     </div>
+
+    <!-- Full-screen overlay for camera-flash effect -->
+    <div id="flash-overlay" aria-hidden="true"></div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>
