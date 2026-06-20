@@ -16,8 +16,8 @@ html, body {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  height: 100vh;
+  height: 100vh;    /* fallback */
+  height: 100dvh;   /* shrinks to exclude browser chrome on iOS Safari 15.4+ */
 }
 
 #board-wrapper {
@@ -107,16 +107,17 @@ html, body {
   fill: none;
 }
 
-/* Chain-reaction flash: warm metallic glow */
+/* Chain-reaction heat map: red (hot/just activated) → green → blue (cool/fading) */
 @keyframes chain-flash {
-  0%   { filter: drop-shadow(0 0 5px #ffd080) drop-shadow(0 0 12px #c8a96e); }
-  60%  { filter: drop-shadow(0 0 3px #c8a96e); }
-  100% { filter: none; }
+  0%   { filter: drop-shadow(0 0 12px #ff2200) drop-shadow(0 0 24px rgba(255,34,0,0.35)); color: #ff4422; }
+  28%  { filter: drop-shadow(0 0 9px #ff8800);  color: #ffaa44; }
+  55%  { filter: drop-shadow(0 0 7px #22cc44);  color: #55dd88; }
+  80%  { filter: drop-shadow(0 0 5px #2255ff);  color: #5588ff; }
+  100% { filter: none;                           color: #c8a96e; }
 }
 
 .cell.chain-active {
-  animation: chain-flash 1.2s ease-out forwards;
-  color: #ffd080;
+  animation: chain-flash 2.5s ease-out forwards;
 }
 
 /* ── UI bar ─────────────────────────────────────────────────────────────── */
@@ -126,6 +127,8 @@ html, body {
   align-items: center;
   gap: 16px;
   padding: 10px 16px;
+  /* Push content above iOS home indicator / bottom bar */
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
   background: #13151a;
   border-top: 1px solid #2e3138;
   font-family: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
@@ -225,14 +228,15 @@ html, body {
 #flash-overlay {
   position: fixed;
   inset: 0;
-  background: #ffd080;
+  /* White flash — neutral so iOS doesn't sample a tint color for its chrome */
+  background: #ffffff;
   opacity: 0;
   pointer-events: none;
   z-index: 999;
 }
 
 @keyframes cam-flash {
-  0%   { opacity: 0.2; }
+  0%   { opacity: 0.15; }
   100% { opacity: 0; }
 }
 
