@@ -27,6 +27,7 @@ html, body {
   align-items: center;
   justify-content: center;
   background: #fcfcfc;
+  overflow: hidden; /* board is sized by JS — clip any sub-pixel overrun */
 }
 
 /* Board size is set by JS to fill available space while staying square */
@@ -76,15 +77,14 @@ html, body {
 .cell .arc {
   stroke: currentColor; /* inherits .cell color for CSS animation */
   stroke-width: 8;
-  stroke-linecap: round;
+  stroke-linecap: butt; /* flat caps so the pipe exits cleanly at the cell edge */
   fill: none;
 }
 
-/* Chain-reaction flash: piece lights up white then fades back to blue */
+/* Chain-reaction flash: blue glow that fades — visible on any background */
 @keyframes chain-flash {
-  0%   { color: #88c6fe; }
-  35%  { color: #ffffff; }
-  100% { color: #88c6fe; }
+  0%   { filter: drop-shadow(0 0 6px #88c6fe); }
+  100% { filter: none; }
 }
 
 .cell.chain-active {

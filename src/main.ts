@@ -68,10 +68,13 @@ function replayAnimation(el: HTMLElement, cls: string) {
 // ── Game ───────────────────────────────────────────────────────────────────
 
 // Base SVG for each cell: └ shape (orientation 1, 0°)
-// Arc from top-center (32,0) to right-center (64,32) via corner (64,0) r=32
+// Arc center at top-right corner (64,0), r=32, CCW from top-center (32,0) to
+// right-center (64,32). sweep=0 (CCW) ensures the arc hugs the corner so each
+// pipe endpoint exits perpendicular to its cell edge — critical for seamless
+// connection with adjacent cells.
 const CELL_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <circle cx="32" cy="32" r="32" fill="#f8f8f8"/>
-  <path class="arc" d="M 32,0 A 32,32 0 0,1 64,32"/>
+  <path class="arc" d="M 32,0 A 32,32 0 0,0 64,32"/>
 </svg>`;
 
 function initGame() {
@@ -195,15 +198,20 @@ function initGame() {
   // ── Responsive sizing ────────────────────────────────────────────────────
 
   function resize() {
-    const ui     = document.getElementById("ui")!;
-    const availH = window.innerHeight - ui.offsetHeight - 16;
-    const availW = window.innerWidth - 16;
+    const ui  = document.getElementById("ui")!;
+    // visualViewport gives the actual visible area on mobile (excludes browser
+    // chrome that appears/disappears on scroll), falling back to window dims.
+    const vw  = window.visualViewport?.width  ?? window.innerWidth;
+    const vh  = window.visualViewport?.height ?? window.innerHeight;
+    const availH = vh - ui.offsetHeight - 8;
+    const availW = vw - 8;
     const size   = Math.max(0, Math.min(availH, availW));
     board.style.width  = `${size}px`;
     board.style.height = `${size}px`;
   }
 
   window.addEventListener("resize", resize);
+  window.visualViewport?.addEventListener("resize", resize);
   requestAnimationFrame(resize); // defer until after first layout
 }
 
